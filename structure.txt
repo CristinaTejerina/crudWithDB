@@ -1,0 +1,17 @@
+crudWithDB
+├── go.mod
+├── docker-compose.yml
+├── migrations
+│   └── 001_create_users.sql
+├── cmd/api/main.go
+└── internal
+├── domain
+│   ├── user.go
+│   └── user_repository.go
+├── application
+│   └── user_service.go
+└── adapters
+├── httpadapter
+│   └── user_handler.go
+└── repository
+└── user_repository_postgres.go
