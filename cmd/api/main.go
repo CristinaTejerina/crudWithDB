@@ -33,7 +33,7 @@ func main() {
 	logger.Info("listening on :" + port)
 	err = r.Run(":" + port)
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error("error : ", err.Error())
 		return
 	}
 }
