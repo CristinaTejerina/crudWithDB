@@ -9,9 +9,13 @@ crudWithDB
 │   ├── user.go
 │   └── user_repository.go
 ├── application
+│   └── mock.go
 │   └── user_service.go
+│   └── user_service_test.go
 └── adapters
 ├── httpadapter
+│   └── mock.go
 │   └── user_handler.go
+│   └── user_handler_test.go
 └── repository
-└── user_repository_postgres.go
+    └── user_repository_postgres.go
