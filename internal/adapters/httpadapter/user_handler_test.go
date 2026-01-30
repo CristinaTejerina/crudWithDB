@@ -29,14 +29,16 @@ func setupRouter(repo *UserRepoMock) *gin.Engine {
 	return r
 }
 
-func TestCreateUser_OK(t *testing.T) {
+func TestCreateUserOK(t *testing.T) {
 	repo := new(UserRepoMock)
 	router := setupRouter(repo)
 
 	user := domain.User{ID: "1", Name: "Ana", Email: "ana@test.com"}
 	body, _ := json.Marshal(user)
 
-	repo.On("Create", user).Return(nil)
+	repo.On("Create", user).
+		Return(nil).
+		Once()
 
 	req, _ := http.NewRequest(http.MethodPost, "/users", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
@@ -48,7 +50,7 @@ func TestCreateUser_OK(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
-func TestCreateUser_BadRequest(t *testing.T) {
+func TestCreateUserBadRequest(t *testing.T) {
 	repo := new(UserRepoMock)
 	router := setupRouter(repo)
 
@@ -60,13 +62,34 @@ func TestCreateUser_BadRequest(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
-func TestGetUser_OK(t *testing.T) {
+func TestCreateUserInternalError(t *testing.T) {
+	repo := new(UserRepoMock)
+	router := setupRouter(repo)
+
+	user := domain.User{ID: "1", Name: "Ana", Email: "ana@test.com"}
+	body, _ := json.Marshal(user)
+
+	repo.On("Create", mock.Anything).
+		Return(errors.New("not found")).
+		Once()
+
+	req, _ := http.NewRequest(http.MethodPost, "/users", bytes.NewBuffer(body))
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestGetUserOK(t *testing.T) {
 	repo := new(UserRepoMock)
 	router := setupRouter(repo)
 
 	user := domain.User{ID: "1", Name: "Ana", Email: "ana@test.com"}
 
-	repo.On("GetByID", "1").Return(user, nil)
+	repo.On("GetByID", "1").
+		Return(user, nil).
+		Once()
 
 	req, _ := http.NewRequest(http.MethodGet, "/users/1", nil)
 	w := httptest.NewRecorder()
@@ -82,11 +105,29 @@ func TestGetUser_OK(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
-func TestGetUser_NotFound(t *testing.T) {
+func TestGetUserBadRequest(t *testing.T) {
 	repo := new(UserRepoMock)
 	router := setupRouter(repo)
 
-	repo.On("GetByID", "9").Return(domain.User{}, sql.ErrNoRows)
+	repo.On("GetByID", "1").
+		Return(domain.User{}, sql.ErrNoRows).
+		Once()
+
+	req, _ := http.NewRequest(http.MethodGet, "/users/1", bytes.NewBuffer([]byte("{bad json")))
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+}
+
+func TestGetUserNotFound(t *testing.T) {
+	repo := new(UserRepoMock)
+	router := setupRouter(repo)
+
+	repo.On("GetByID", "9").
+		Return(domain.User{}, sql.ErrNoRows).
+		Once()
 
 	req, _ := http.NewRequest(http.MethodGet, "/users/9", nil)
 	w := httptest.NewRecorder()
@@ -96,7 +137,23 @@ func TestGetUser_NotFound(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, w.Code)
 }
 
-func TestUpdateUser_OK(t *testing.T) {
+func TestGetUserInternalError(t *testing.T) {
+	repo := new(UserRepoMock)
+	router := setupRouter(repo)
+
+	repo.On("GetByID", mock.Anything).
+		Return(domain.User{}, errors.New("not found")).
+		Once()
+
+	req, _ := http.NewRequest(http.MethodGet, "/users/1", nil)
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestUpdateUserOK(t *testing.T) {
 	repo := new(UserRepoMock)
 	router := setupRouter(repo)
 
@@ -105,7 +162,9 @@ func TestUpdateUser_OK(t *testing.T) {
 
 	body, _ := json.Marshal(bodyUser)
 
-	repo.On("Update", expected).Return(nil)
+	repo.On("Update", expected).
+		Return(nil).
+		Once()
 
 	req, _ := http.NewRequest(http.MethodPut, "/users/1", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
@@ -117,14 +176,16 @@ func TestUpdateUser_OK(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
-func TestUpdateUser_NotFound(t *testing.T) {
+func TestUpdateUserNotFound(t *testing.T) {
 	repo := new(UserRepoMock)
 	router := setupRouter(repo)
 
 	user := domain.User{ID: "1", Name: "x", Email: "x@test.com"}
 	body, _ := json.Marshal(user)
 
-	repo.On("Update", mock.Anything).Return(sql.ErrNoRows)
+	repo.On("Update", mock.Anything).
+		Return(sql.ErrNoRows).
+		Once()
 
 	req, _ := http.NewRequest(http.MethodPut, "/users/1", bytes.NewBuffer(body))
 	w := httptest.NewRecorder()
@@ -134,11 +195,48 @@ func TestUpdateUser_NotFound(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, w.Code)
 }
 
-func TestDeleteUser_OK(t *testing.T) {
+func TestUpdateUserInternalError(t *testing.T) {
 	repo := new(UserRepoMock)
 	router := setupRouter(repo)
 
-	repo.On("Delete", "1").Return(nil)
+	user := domain.User{ID: "1", Name: "x", Email: "x@test.com"}
+	body, _ := json.Marshal(user)
+
+	repo.On("Update", mock.Anything).
+		Return(errors.New("not found")).
+		Once()
+
+	req, _ := http.NewRequest(http.MethodPut, "/users/1", bytes.NewBuffer(body))
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestUpdateUserBadRequest(t *testing.T) {
+	repo := new(UserRepoMock)
+	router := setupRouter(repo)
+
+	repo.On("Update", mock.Anything).
+		Return(sql.ErrNoRows).
+		Once()
+
+	req, _ := http.NewRequest(http.MethodPut, "/users/1", bytes.NewBuffer([]byte("{bad json")))
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestDeleteUserOK(t *testing.T) {
+	repo := new(UserRepoMock)
+	router := setupRouter(repo)
+
+	repo.On("Delete", "1").
+		Return(nil).
+		Once()
 
 	req, _ := http.NewRequest(http.MethodDelete, "/users/1", nil)
 	w := httptest.NewRecorder()
@@ -149,11 +247,13 @@ func TestDeleteUser_OK(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
-func TestDeleteUser_NotFound(t *testing.T) {
+func TestDeleteUserNotFound(t *testing.T) {
 	repo := new(UserRepoMock)
 	router := setupRouter(repo)
 
-	repo.On("Delete", "1").Return(errors.New("not found"))
+	repo.On("Delete", "1").
+		Return(errors.New("not found")).
+		Once()
 
 	req, _ := http.NewRequest(http.MethodDelete, "/users/1", nil)
 	w := httptest.NewRecorder()
@@ -161,4 +261,20 @@ func TestDeleteUser_NotFound(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestDeleteUserBadRequest(t *testing.T) {
+	repo := new(UserRepoMock)
+	router := setupRouter(repo)
+
+	repo.On("Delete", "1").
+		Return(sql.ErrNoRows).
+		Once()
+
+	req, _ := http.NewRequest(http.MethodDelete, "/users/1", bytes.NewBuffer([]byte("{bad json")))
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
 }

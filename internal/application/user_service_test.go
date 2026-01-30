@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUserService_Create_OK(t *testing.T) {
+func TestUserServiceCreateOK(t *testing.T) {
 	repo := new(UserRepoMock)
 	service := NewUserService(repo)
 
@@ -29,7 +29,7 @@ func TestUserService_Create_OK(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
-func TestUserService_Create_Error(t *testing.T) {
+func TestUserServiceCreateError(t *testing.T) {
 	repo := new(UserRepoMock)
 	service := NewUserService(repo)
 
@@ -44,7 +44,7 @@ func TestUserService_Create_Error(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
-func TestUserService_GetByID_OK(t *testing.T) {
+func TestUserServiceGetByIDOK(t *testing.T) {
 	repo := new(UserRepoMock)
 	service := NewUserService(repo)
 
@@ -65,7 +65,7 @@ func TestUserService_GetByID_OK(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
-func TestUserService_Get_NotFound(t *testing.T) {
+func TestUserServiceGetNotFound(t *testing.T) {
 	repo := new(UserRepoMock)
 	service := NewUserService(repo)
 
@@ -80,7 +80,7 @@ func TestUserService_Get_NotFound(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
-func TestUserService_Update_OK(t *testing.T) {
+func TestUserServiceUpdateOK(t *testing.T) {
 	repo := new(UserRepoMock)
 	service := NewUserService(repo)
 
@@ -100,7 +100,7 @@ func TestUserService_Update_OK(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
-func TestUserService_Update_Error(t *testing.T) {
+func TestUserServiceUpdateError(t *testing.T) {
 	repo := new(UserRepoMock)
 	service := NewUserService(repo)
 
@@ -116,7 +116,7 @@ func TestUserService_Update_Error(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
-func TestUserService_Delete_OK(t *testing.T) {
+func TestUserServiceDeleteOK(t *testing.T) {
 	repo := new(UserRepoMock)
 	service := NewUserService(repo)
 
@@ -130,7 +130,7 @@ func TestUserService_Delete_OK(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
-func TestUserService_Delete_Error(t *testing.T) {
+func TestUserServiceDeleteError(t *testing.T) {
 	repo := new(UserRepoMock)
 	service := NewUserService(repo)
 
